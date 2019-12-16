@@ -35,7 +35,7 @@ namespace Lab1
             AddSchoolNames();
 
             //adds data to repositories
-            //AddJunk(teamRepository, playerRepository, gameRepository, activePlayersRepository);
+            AddJunk(teamRepository, playerRepository, gameRepository, activePlayersRepository);
 
             ConsoleUi consoleUi = new ConsoleUi(playerService, teamService, gameService, activePlayerService,
                 _teamNames, _schoolNames);
@@ -69,7 +69,8 @@ namespace Lab1
 
             //adding arandom players
             id = 0;
-            var schoolTeams = Enumerable.Range(0, _teamNames.Count).OrderBy(x => rand.Next()).Take(_schoolNames.Count);
+            var schoolTeams = Enumerable.Range(0, _teamNames.Count).OrderBy(x => rand.Next()).Take(_schoolNames.Count)
+                .ToList();
             foreach (var i in schoolTeams.Select((teamId, index) => (index, teamId)))
             {
                 Team team = teamRepository.FindOne(i.teamId);
@@ -88,7 +89,8 @@ namespace Lab1
                 {
                     Team team1 = teamRepository.FindOne(i);
                     Team team2 = teamRepository.FindOne(j);
-                    gameRepository.Save(new Game(team1, team2, start.AddDays(rand.Next(range))));
+                    if (schoolTeams.Contains(team1.Id) && schoolTeams.Contains(team2.Id))
+                        gameRepository.Save(new Game(team1, team2, start.AddDays(rand.Next(range))));
                 }
 
             //adding random active players
@@ -106,7 +108,7 @@ namespace Lab1
         private static void AddActivePlayerToGame(int team1Id, int team2Id, int teamId, List<Player> players,
             Random rand, ActivePlayerFileRepository activePlayersRepository)
         {
-            var teamPlayers = players.Where(p => p.Team.Id.Equals(team1Id)).ToList();
+            var teamPlayers = players.Where(p => p.Team.Id.Equals(teamId)).ToList();
             var teamPlaying = Enumerable.Range(0, teamPlayers.Count()).OrderBy(x => rand.Next()).ToArray();
             int i = 0;
             foreach (Player player in teamPlayers)
