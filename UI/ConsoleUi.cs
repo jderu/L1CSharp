@@ -160,10 +160,9 @@ namespace Lab1.UI
             Team team = _teamService.FindOne(teamId);
             if (team == null)
                 throw new UiException("Team not found");
-            else
-                foreach (Player player in _playerService.FindAll())
-                    if (player.Team.Id.Equals(team.Id))
-                        Console.WriteLine(player);
+            foreach (Player player in _playerService.FindAll())
+                if (player.Team.Id.Equals(team.Id))
+                    Console.WriteLine(player);
         }
 
         private void Command2()

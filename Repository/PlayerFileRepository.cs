@@ -16,7 +16,6 @@ namespace Lab1.Repository
         protected override Player ReadEntity(string line)
         {
             string[] fields = line.Split(new[] {"||"}, StringSplitOptions.RemoveEmptyEntries);
-            Console.WriteLine(fields.ToString());
             Team team = _teamRepository.FindOne(int.Parse(fields[3]));
             return new Player(int.Parse(fields[0]), fields[1], fields[2], team);
         }

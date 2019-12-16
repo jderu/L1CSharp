@@ -57,7 +57,10 @@ namespace Lab1
 
         protected bool Equals(GameId<T> other)
         {
-            return EqualityComparer<T>.Default.Equals(Team1Id, other.Team1Id) && EqualityComparer<T>.Default.Equals(Team2Id, other.Team2Id);
+            return EqualityComparer<T>.Default.Equals(Team1Id, other.Team1Id) &&
+                   EqualityComparer<T>.Default.Equals(Team2Id, other.Team2Id) ||
+                   EqualityComparer<T>.Default.Equals(Team1Id, other.Team2Id) &&
+                   EqualityComparer<T>.Default.Equals(Team2Id, other.Team1Id);
         }
 
         public override bool Equals(object obj)
@@ -72,7 +75,9 @@ namespace Lab1
         {
             unchecked
             {
-                return (EqualityComparer<T>.Default.GetHashCode(Team1Id) * 397) ^ EqualityComparer<T>.Default.GetHashCode(Team2Id);
+                var hc1 = EqualityComparer<T>.Default.GetHashCode(Team1Id);
+                var hc2 = EqualityComparer<T>.Default.GetHashCode(Team2Id);
+                return (Math.Min(hc1, hc2) * 397) ^ Math.Max(hc1, hc2);
             }
         }
     }

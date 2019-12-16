@@ -26,9 +26,7 @@ namespace Lab1.Repository
                 System.IO.StreamReader file = new System.IO.StreamReader(_filePath);
                 while (!file.EndOfStream)
                 {
-                    string line = file.ReadLine();
-                    Console.WriteLine(line);
-                    E entity = ReadEntity(line);
+                    E entity = ReadEntity(file.ReadLine());
                     _data.Add(entity.Id, entity);
                 }
                 file.Close();

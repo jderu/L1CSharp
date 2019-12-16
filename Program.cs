@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Lab1.Repository;
 using Lab1.UI;
 
@@ -32,18 +34,105 @@ namespace Lab1
             AddTeamNames();
             AddSchoolNames();
 
-            //TODO add junk to repository
-            AddJunk(teamRepository,playerRepository,gameRepository,activePlayersRepository);
-            
+            //adds data to repositories
+            //AddJunk(teamRepository, playerRepository, gameRepository, activePlayersRepository);
+
             ConsoleUi consoleUi = new ConsoleUi(playerService, teamService, gameService, activePlayerService,
                 _teamNames, _schoolNames);
             consoleUi.Run();
         }
 
-        private static void AddJunk(TeamFileRepository teamRepository, PlayerFileRepository playerRepository, GameFileRepository gameRepository, ActivePlayerFileRepository activePlayersRepository)
+        private static void AddJunk(TeamFileRepository teamRepository, PlayerFileRepository playerRepository,
+            GameFileRepository gameRepository, ActivePlayerFileRepository activePlayersRepository)
         {
-            
+            Random rand = new Random(DateTime.Now.Millisecond);
+            string[] firstNames =
+            {
+                "Jonathan", "Will A.", "Robert E. O.", "Dio", "George", "Joseph", "Caesar A.", "Lisa", "Rudol", "Suzi",
+                "Kars", "Esidisi", "Wamuu", "Santana", "Jotaro", "Muhammad", "Noriaki", "Jean Pierre", "Iggy", "Holy",
+                "Vanilla", "Hol", "Daniel J.", "Oingo", "Boingo", "Anubis", "Telence", "Josuke", "Okuyasu", "Koichi",
+                "Rohan", "Hayato", "Yukako", "Tonio", "Tomoko", "Yoshikage", "Giorno", "Bruno", "Leone", "Guido",
+                "Guido", "Narancia", "Trish", "Coco", "Pericolo", "Diavolo", "Cioccolata", "Polpo", "Pesci", ""
+            };
+            string[] lastNames =
+            {
+                "Joestar", "Zeppeli", "Speedwagon", "Brando", "Lisa", "von Stroheim", "Q", "Kujo", "Avdol", "Kakyoin",
+                "Polnareff", "Ice", "Horse", "D'Arby", "Higashikata", "Nijimura", "Hirose", "Kishibe", "Kawajiri",
+                "Yamagishi", "Trussardi", "Kira", "Giovanna", "Bucciarati", "Abbacchio", "Mista", "Ghirga", "Una",
+                "Jumbo", "Doppio", ""
+            };
+
+            //adding random teams
+            int id = 0;
+            foreach (string teamName in _teamNames)
+                teamRepository.Save(new Team(id++, teamName));
+
+            //adding arandom players
+            id = 0;
+            var schoolTeams = Enumerable.Range(0, _teamNames.Count).OrderBy(x => rand.Next()).Take(_schoolNames.Count);
+            foreach (var i in schoolTeams.Select((teamId, index) => (index, teamId)))
+            {
+                Team team = teamRepository.FindOne(i.teamId);
+                for (int j = 0; j < rand.Next(15, 25); j++)
+                    playerRepository.Save(new Player(id++, GenerateRandomName(rand, firstNames, lastNames),
+                        _schoolNames[i.index], team));
+            }
+
+            //adding random games
+            DateTime start = new DateTime(1995, 1, 1);
+            DateTime end = DateTime.Today;
+            int range = (end - start).Days;
+            for (int i = 0; i < _schoolNames.Count - 1; i++)
+            for (int j = i + 1; j < _schoolNames.Count; j++)
+                if (rand.Next(3) == 0)
+                {
+                    Team team1 = teamRepository.FindOne(i);
+                    Team team2 = teamRepository.FindOne(j);
+                    gameRepository.Save(new Game(team1, team2, start.AddDays(rand.Next(range))));
+                }
+
+            //adding random active players
+            var players = playerRepository.FindAll().ToList();
+            foreach (Game game in gameRepository.FindAll())
+            {
+                int team1Id = game.Id.Team1Id;
+                int team2Id = game.Id.Team2Id;
+
+                AddActivePlayerToGame(team1Id, team2Id, team1Id, players, rand, activePlayersRepository);
+                AddActivePlayerToGame(team1Id, team2Id, team2Id, players, rand, activePlayersRepository);
+            }
         }
+
+        private static void AddActivePlayerToGame(int team1Id, int team2Id, int teamId, List<Player> players,
+            Random rand, ActivePlayerFileRepository activePlayersRepository)
+        {
+            var teamPlayers = players.Where(p => p.Team.Id.Equals(team1Id)).ToList();
+            var teamPlaying = Enumerable.Range(0, teamPlayers.Count()).OrderBy(x => rand.Next()).ToArray();
+            int i = 0;
+            foreach (Player player in teamPlayers)
+            {
+                if (teamPlaying[i] < 15)
+                {
+                    int score = 0;
+                    if (teamPlaying[i] < 11)
+                    {
+                        int scoreProbability = rand.Next(1, 101);
+                        if (scoreProbability > 95)
+                            score = 2;
+                        else if (scoreProbability > 80)
+                            score = 1;
+                        activePlayersRepository.Save(new ActivePlayer(player.Id, team1Id, team2Id, score,
+                            ActivityState.Playing));
+                    }
+                    else
+                        activePlayersRepository.Save(new ActivePlayer(player.Id, team1Id, team2Id, score,
+                            ActivityState.Reserve));
+                }
+
+                i++;
+            }
+        }
+
 
         private static void AddTeamNames()
         {
@@ -105,7 +194,12 @@ namespace Lab1
             _schoolNames.Add("Liceul de Informatica \"Tiberiu Popoviciu\"");
             _schoolNames.Add("Scoala Gimnaziala \"Alexandru Vaida – Voevod\"");
             _schoolNames.Add("Liceul Teoretic ELF");
-            _schoolNames.Add("Scoala Gimnaziala \"Gheorghe Sincai\" Floresti");
+            //_schoolNames.Add("Scoala Gimnaziala \"Gheorghe Sincai\" Floresti");
+        }
+
+        private static string GenerateRandomName(Random rand, string[] firstName, string[] lastName)
+        {
+            return (firstName[rand.Next(firstName.Length)] + " " + lastName[rand.Next(lastName.Length)]).Trim();
         }
     }
 }
