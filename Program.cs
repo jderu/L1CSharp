@@ -34,7 +34,7 @@ namespace Lab1 {
 
             PlayerFileRepository playerRepository = new PlayerFileRepository(new PlayerValidator(),
                 filePathDirectory + "players.txt", teamRepository);
-            Service<int, Player> playerService = new Service<int, Player>(playerRepository);
+            PlayerService playerService = new PlayerService(playerRepository);
 
             GameFileRepository gameRepository =
                 new GameFileRepository(new GameValidator(), filePathDirectory + "games.txt", teamRepository);
@@ -45,7 +45,7 @@ namespace Lab1 {
             ActivePlayerService activePlayerService = new ActivePlayerService(activePlayersRepository);
 
             //adds data to repositories
-            AddJunk(teamRepository, playerRepository, gameRepository, activePlayersRepository);
+            //AddJunk(teamRepository, playerRepository, gameRepository, activePlayersRepository);
 
             ConsoleUi consoleUi = new ConsoleUi(playerService, teamService, gameService, activePlayerService,
                 _teamNames, _schoolNames);

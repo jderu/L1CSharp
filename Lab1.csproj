@@ -55,6 +55,7 @@
     <Compile Include="Repository\TeamFileRepository.cs" />
     <Compile Include="Services\ActivePlayerService.cs" />
     <Compile Include="Services\GameService.cs" />
+    <Compile Include="Services\PlayerService.cs" />
     <Compile Include="Services\Service.cs" />
     <Compile Include="UI\ConsoleUi.cs" />
     <Compile Include="UI\UiException.cs" />
